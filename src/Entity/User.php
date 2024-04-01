@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-//#[ApiResource]
+#[ApiResource]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -56,6 +56,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'idUser')]
     private Collection $orders;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $apiToken = null;
 
     public function __construct()
     {
@@ -253,6 +256,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $order->setIdUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(?string $apiToken): static
+    {
+        $this->apiToken = $apiToken;
 
         return $this;
     }
