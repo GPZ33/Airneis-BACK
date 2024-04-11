@@ -3,13 +3,25 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\AdressRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AdressRepository::class)]
-//#[ApiResource]
+#[ApiResource]
+#[GetCollection(security: "is_granted('ROLE_ADMIN')")] // Peut on ajouter or object.owner si l'user a plusieurs commandes ? Si oui, l'appel GetCollection appellera t il tous les objets ou juste les siens ?
+#[Get(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
+#[Post(security: "is_granted('ROLE_USER')")] // sécurité suffisante ? Un autre User peut-il créer une adresse pour un autre User ? Du mal à visualiser
+#[Put(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
+#[Patch(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
+#[Delete(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
 class Adress
 {
     #[ORM\Id]

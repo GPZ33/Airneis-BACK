@@ -9,6 +9,12 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Entity\Category;
 use App\Entity\Material;
 
@@ -18,6 +24,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
    // normalizationContext: ['groups' => ['read:collection']]
 )]
+#[GetCollection()]
+#[Get()]
+#[Put(security: "is_granted('ROLE_ADMIN')")]
+#[Patch(security: "is_granted('ROLE_ADMIN')")]
+#[Post(security: "is_granted('ROLE_ADMIN')")]
+#[Delete(security: "is_granted('ROLE_ADMIN')")]
 class Product 
 {
     #[ORM\Id]
