@@ -16,13 +16,16 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
 // Gestion des routes et autorisations à vérifier et clarifier avec serialisation
-#[ApiResource]
-#[GetCollection(security: "is_granted('ROLE_ADMIN')")] // Peut on ajouter or object.owner si l'user a plusieurs commandes ? Si oui, l'appel GetCollection appellera t il tous les objets ou juste les siens ?
-#[Get(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Post(security: "is_granted('ROLE_USER')")] // sécurité suffisante ? Un autre User peut-il créer une commande et mettre l'ID d'un autre User ? Du mal à visualiser
-#[Put(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Patch(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Delete(security: "is_granted('ROLE_ADMIN')")]
+#[ApiResource(
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"), 
+        new Get(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Put(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Post(security: "is_granted('ROLE_USER')"),
+        new Patch(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Delete(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+    ],
+)]
 class Order
 {
     #[ORM\Id]

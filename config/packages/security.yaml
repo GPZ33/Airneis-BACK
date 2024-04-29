@@ -14,13 +14,6 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
             
-#        login:
-#            pattern: ^/api/login
-#            stateless: true
-#            json_login:
-#                check_path: /api/login
-#                success_handler: lexik_jwt_authentication.handler.authentication_success
-#                failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
         api:
             pattern: ^/api
@@ -51,6 +44,8 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/api, roles: PUBLIC_ACCESS }
         - { path: ^/api/categories, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/adresses, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/orders, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

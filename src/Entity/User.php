@@ -24,22 +24,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: '`user`')]
 #[ApiResource(
     operations: [
-        new GetCollection(),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
         new Post(processor: UserPasswordHasher::class),
-        new Get(),
-        new Put(processor: UserPasswordHasher::class),
-        new Patch(processor: UserPasswordHasher::class),
-        new Delete(),
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new Put(processor: UserPasswordHasher::class, security: "is_granted('ROLE_ADMIN') or object.owner == user"),
+        new Patch(processor: UserPasswordHasher::class, security: "is_granted('ROLE_ADMIN') or object.owner == user"),
+        new Delete(security: "is_granted('ROLE_ADMIN') or object.owner == user"),
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update']],
 )]
-#[GetCollection(security: "is_granted('ROLE_ADMIN')")]
-#[Get(security: "is_granted('ROLE_ADMIN')")]
-#[Post()]
-#[Put(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Patch(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Delete(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[Groups(['user:read'])]

@@ -13,15 +13,20 @@ use App\Repository\AdressRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\ExpressionLanguage\Expression;
 
 #[ORM\Entity(repositoryClass: AdressRepository::class)]
-#[ApiResource]
-#[GetCollection(security: "is_granted('ROLE_ADMIN')")] // Peut on ajouter or object.owner si l'user a plusieurs commandes ? Si oui, l'appel GetCollection appellera t il tous les objets ou juste les siens ?
-#[Get(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Post(security: "is_granted('ROLE_USER')")] // sécurité suffisante ? Un autre User peut-il créer une adresse pour un autre User ? Du mal à visualiser
-#[Put(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Patch(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
-#[Delete(security: "is_granted('ROLE_ADMIN') or object.owner == user")]
+#[ApiResource(
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"), // Peut on ajouter or object.owner si l'user a plusieurs commandes ? Si oui, l'appel GetCollection appellera t il tous les objets ou juste les siens ?
+        new Get(security: "is_granted('ROLE_ADMIN') or object.idUser == user"), // ça marche
+        new Put(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Post(security: "is_granted('ROLE_USER')"), // sécurité suffisante ? Un autre User peut-il créer une adresse pour un autre User ? Du mal à visualiser
+        new Patch(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Delete(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+    ]
+)]
+
 class Adress
 {
     #[ORM\Id]
@@ -30,7 +35,7 @@ class Adress
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'adresses')]
-    private ?User $idUser = null;
+    public ?User $idUser = null;
 
     #[ORM\Column(length: 255)]
     private ?string $city = null;
