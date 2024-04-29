@@ -3,13 +3,29 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\OrderRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
-#[ApiResource]
+// Gestion des routes et autorisations à vérifier et clarifier avec serialisation
+#[ApiResource(
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"), 
+        new Get(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Put(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Post(security: "is_granted('ROLE_USER')"),
+        new Patch(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Delete(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+    ],
+)]
 class Order
 {
     #[ORM\Id]
