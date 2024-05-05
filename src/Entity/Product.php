@@ -8,7 +8,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -69,6 +68,9 @@ class Product
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'idProduct')]
     private Collection $orders;
 
+    #[ORM\OneToMany(targetEntity: OrderProduct::class, mappedBy: 'idProduct')]
+    private Collection $orderProducts;
+
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $addedDate = null;
 
@@ -77,6 +79,7 @@ class Product
         $this->category = new ArrayCollection();
         $this->materials = new ArrayCollection();
         $this->orders = new ArrayCollection();
+        $this->orderProducts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -234,6 +237,32 @@ class Product
     public function setAddedDate(\DateTimeInterface $addedDate): static
     {
         $this->addedDate = new \DateTime();
+        return $this;
+    }
+    public function getOrderProducts(): Collection
+    {
+        return $this->orderProducts;
+    }
+
+    public function addOrderProduct(OrderProduct $orderProduct): static
+    {
+        if (!$this->orderProducts->contains($orderProduct)) {
+            $this->orderProducts->add($orderProduct);
+            $orderProduct->setIdProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrderProduct(OrderProduct $orderProduct): static
+    {
+        if ($this->orderProducts->removeElement($orderProduct)) {
+    
+            if ($orderProduct->getIdProduct() === $this) {
+                $orderProduct->setIdProduct(null);
+            }
+        }
+
         return $this;
     }
 }
