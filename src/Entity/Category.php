@@ -36,13 +36,13 @@ class Category
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $image = null;
-
-    #[ORM\Column(length: 255)]
     private ?string $description = null;
 
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'category')]
     private Collection $products;
+
+    #[ORM\OneToOne(mappedBy: 'category', cascade: ['persist', 'remove'])]
+    private ?Images $image = null;
 
     public function __construct()
     {
@@ -62,18 +62,6 @@ class Category
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    public function setImage(string $image): static
-    {
-        $this->image = $image;
 
         return $this;
     }
@@ -113,6 +101,28 @@ class Category
         if ($this->products->removeElement($product)) {
             $product->removeCategory($this);
         }
+
+        return $this;
+    }
+
+    public function getImage(): ?Images
+    {
+        return $this->image;
+    }
+
+    public function setImage(?Images $image): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($image === null && $this->image !== null) {
+            $this->image->setCategory(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($image !== null && $image->getCategory() !== $this) {
+            $image->setCategory($this);
+        }
+
+        $this->image = $image;
 
         return $this;
     }

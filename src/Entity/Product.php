@@ -16,7 +16,6 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Entity\Category;
 use App\Entity\Material;
-
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -44,10 +43,7 @@ class Product
    // #[Groups(['read:collection'])]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
-    //#[Groups(['read:collection'])]
-    private ?string $image = null;
-
+   
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
@@ -74,12 +70,22 @@ class Product
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $addedDate = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $details = null;
+
+    /**
+     * @var Collection<int, Images>
+     */
+    #[ORM\OneToMany(targetEntity: Images::class, mappedBy: 'product')]
+    private Collection $images;
+
     public function __construct()
     {
         $this->category = new ArrayCollection();
         $this->materials = new ArrayCollection();
         $this->orders = new ArrayCollection();
         $this->orderProducts = new ArrayCollection();
+        $this->images = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -95,18 +101,6 @@ class Product
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    public function setImage(string $image): static
-    {
-        $this->image = $image;
 
         return $this;
     }
@@ -254,12 +248,55 @@ class Product
         return $this;
     }
 
+
     public function removeOrderProduct(OrderProduct $orderProduct): static
     {
         if ($this->orderProducts->removeElement($orderProduct)) {
     
             if ($orderProduct->getIdProduct() === $this) {
                 $orderProduct->setIdProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDetails(): ?string
+    {
+        return $this->details;
+    }
+
+    public function setDetails(?string $details): static
+    {
+        $this->details = $details;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Images>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Images $images): static
+    {
+        if (!$this->images->contains($images)) {
+            $this->images->add($images);
+            $images->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(Images $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            // set the owning side to null (unless already changed)
+            if ($image->getProduct() === $this) {
+                $image->setProduct(null);
             }
         }
 
