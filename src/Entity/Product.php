@@ -60,9 +60,6 @@ class Product
     //#[Groups(['read:out'])]
     #[ORM\ManyToMany(targetEntity: Material::class, mappedBy: 'products')]
     private Collection $materials;
-    //#[Groups(['read:out'])]
-    #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'idProduct')]
-    private Collection $orders;
 
     #[ORM\OneToMany(targetEntity: OrderProduct::class, mappedBy: 'idProduct')]
     private Collection $orderProducts;
@@ -83,7 +80,6 @@ class Product
     {
         $this->category = new ArrayCollection();
         $this->materials = new ArrayCollection();
-        $this->orders = new ArrayCollection();
         $this->orderProducts = new ArrayCollection();
         $this->images = new ArrayCollection();
     }
@@ -187,36 +183,6 @@ class Product
     {
         if ($this->materials->removeElement($material)) {
             $material->removeProduct($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Order>
-     */
-    public function getOrders(): Collection
-    {
-        return $this->orders;
-    }
-
-    public function addOrder(Order $order): static
-    {
-        if (!$this->orders->contains($order)) {
-            $this->orders->add($order);
-            $order->setIdProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrder(Order $order): static
-    {
-        if ($this->orders->removeElement($order)) {
-            // set the owning side to null (unless already changed)
-            if ($order->getIdProduct() === $this) {
-                $order->setIdProduct(null);
-            }
         }
 
         return $this;
