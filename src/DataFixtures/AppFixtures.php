@@ -5,9 +5,12 @@ namespace App\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use App\Entity\User;
+use App\Entity\Adress;
 use App\Entity\Category;
 use App\Entity\Material;
 use App\Entity\Product;
+use App\Entity\OrderProduct;
+use App\Entity\Order;
 use App\Entity\Images;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -26,6 +29,9 @@ class AppFixtures extends Fixture
         $this->loadCategory($manager);
         $this->loadMaterial($manager);
         $this->loadProduct($manager);
+        $this->loadAdresses($manager);
+        $this->loadOrderProduct($manager);
+        $this->loadOrders($manager);
 
         $manager->flush();
     }
@@ -43,7 +49,7 @@ class AppFixtures extends Fixture
             $user->setPassword($this->passwordHasher->hashPassword($user, $password));
             $user->setBirthday($birthday);
             $manager->persist($user);
-            $this->addReference($name, $user);
+            $this->addReference($email, $user);
         }
 
         $manager->flush();
@@ -53,9 +59,40 @@ class AppFixtures extends Fixture
     {
         return [
             ['Remi','Administrator','admin@symfony.com',['ROLE_ADMIN'],'0645789465','admin', new \DateTime('1980-01-01')],
-            ['John','User','user@symfony.com',[''],'0645789465','user', new \DateTime('1990-01-01')],
-            ['Jane','User','jane@symfony.com',[''],'0645789465','user', new \DateTime('2000-01-01')],
-            ['Doe','Administrator','doe@symfony.com',['ROLE_ADMIN'],'0645789465','admin', new \DateTime('1970-01-01')]
+            ['Doe','Administrator','doe@symfony.com',['ROLE_ADMIN'],'0645789465','admin', new \DateTime('1970-01-01')],
+            ['John','Lennon','john@symfony.com',[''],'0645789465','user', new \DateTime('1990-01-01')],
+            ['Jane','Finn','jane@symfony.com',[''],'0645789465','user', new \DateTime('2000-01-01')],
+            ['Cyril','Le Bucheron','cyril@symfony.com',[''],'0645789465','user', new \DateTime('1995-01-01')],
+            ['Marion','Fabregas','marion@symfony.com',[''],'0645789465','user', new \DateTime('1992-01-01')]
+        ];
+    }
+
+    private function loadAdresses(ObjectManager $manager): void
+    {
+        foreach($this->getAdressData() as [$email, $city, $region, $country, $zipCode,$streetAdress, $adressName, $adressReference]) {
+            $adress = new Adress();
+            $adress->setCity($city);
+            $adress->setRegion($region);
+            $adress->setCountry($country);
+            $adress->setZipCode($zipCode);
+            $adress->setAdress($streetAdress);
+            $adress->setName($adressName);
+            $user = $this->getReference($email);
+            $adress->setIdUser($user);
+            $manager->persist($adress);
+            $this->addReference($adressReference, $adress);
+        }
+
+        $manager->flush();
+    }
+
+    private function getAdressData(): array
+    {
+        return [
+            ['john@symfony.com','Paris','Ile-de-France','France',75000,'1 rue de Paris','Maison',"JohnAdress"],
+            ['jane@symfony.com','London','England', 'United Kingdom', 'SW1A 1AA','1 London Street','Maison',"JaneAdress"],
+            ['cyril@symfony.com','Bordeaux','Nouvelle-Aquitaine','France',33000,'1 rue de Bordeaux','Maison','CyrilAdress'],
+            ['marion@symfony.com','Berlin','Berlin','Germany',10115,'1 Berliner Strasse','Maison','MarionAdress']
         ];
     }
 
@@ -244,6 +281,62 @@ class AppFixtures extends Fixture
             ['JÄTTEBO',1295,['jaettebo-canape.avif','jaettebo-canape2.avif','jaettebo-canape3.avif'],"Le canapé modulable JÄTTEBO est idéal pour passer une soirée entre amis ou en famille. Combinaison avec une confortable méridienne ou canapé personnalisé dans le style qui vous convient.",'Canapé 2,5 places avec méridienne, gauche avec appuie-tête/Samsala gris-beige','Canapés', false,['Lamibois','Panneau de particules','Panneau de fibres de bois','Tissu 100% polyester']], // Lamibois, Panneau de particules, Panneau de fibres de bois, Tissu 100 polyster
             //Selon CdC avoir au moins 8 meubles par catégorie car on doit ajouter 6 produits simulaires en suggestion (même catégorie) et avoir au moins 1 épuisé de chaque
         ];  
+    }
+    
+    private function loadOrderProduct(ObjectManager $manager): void
+    {
+        foreach ($this->getOrderProductData() as [$email, $productName, $quantity, $orderReference]) {
+            $orderProduct = new OrderProduct();
+            $user = $this->getReference($email);
+            $orderProduct->setIdUser($user);
+            $product = $this->getReference($productName);
+            $orderProduct->setIdProduct($product);
+            $orderProduct->setQuantity($quantity);
+            $manager->persist($orderProduct);
+            $this->addReference($orderReference, $orderProduct);
+        }
+    }
+
+    private function getOrderProductData(): array
+    {
+        return [
+            ['john@symfony.com','SÖDERHAMN',1,"john1"],
+            ["john@symfony.com",'BESTÅ TV',1,"john2"],
+            ["john@symfony.com",'MALM',1,"john3"],
+            ["jane@symfony.com",'ODGER',6,"jane1"],
+            ["jane@symfony.com",'PINNTORP',1,"jane2"],
+            ["cyril@symfony.com",'KALLAX',1,"cyril1"]
+        ];
+    }
+
+    private function loadOrders(ObjectManager $manager): void
+    {
+        foreach ($this->getOrderData() as [$email, $state, $deliveryAddress, $dateOrder, $orderProducts]) {
+            $order = new Order();
+            $user = $this->getReference($email);
+            $order->setIdUser($user);
+            $order->setState($state);
+            $adress = $this->getReference($deliveryAddress);
+            $order->setIdAdress($adress);
+            $date = new \DateTime($dateOrder);
+            $order->setDate($date);
+            foreach ($orderProducts as $orderProduct) {
+                $order->addOrderProduct($this->getReference($orderProduct));
+            }
+            $manager->persist($order);
+        }
+    }
+
+    private function getOrderData(): array
+    {
+        return [
+            // en cours de livraison
+            ['john@symfony.com','en cours de livraison','JohnAdress','2024-05-10',['john1','john2','john3']],
+            // commandé
+            ['jane@symfony.com','commandé','JaneAdress','2024-05-10',['jane1','jane2']],
+            // livré
+            ['cyril@symfony.com','livré','CyrilAdress','2024-04-23',['cyril1']]
+        ];
     }
 
 }
