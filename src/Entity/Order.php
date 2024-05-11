@@ -12,13 +12,17 @@ use ApiPlatform\Metadata\Put;
 use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
-// Gestion des routes et autorisations à vérifier et clarifier avec serialisation
 #[ApiResource(
+    normalizationContext: ['groups' => ['order:read']],
+    denormalizationContext: ['groups' => ['order:write']],
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"), 
         new Get(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
@@ -26,7 +30,7 @@ use Doctrine\ORM\Mapping as ORM;
         new Post(security: "is_granted('ROLE_USER')"),
         new Patch(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
         new Delete(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
-    ],
+    ]
 )]
 class Order
 {
@@ -35,30 +39,33 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(["order:write", "order:read"])]
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $idUser = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Product $idProduct = null;
-
+    #[Groups(["order:write", "order:read"])]
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Adress $idAdress = null;
 
+    #[Groups(["order:write", ])]
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['en cours de paiement', 'commandé', 'en cours de livraison', 'livré', 'annulé'])]
     private ?string $state = null;
-
+    #[Groups(["order:write", "order:read"])]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column]
+    #[Groups(["order:read"])]
     private ?float $priceTotal = null;
 
     /**
      * @var Collection<int, OrderProduct>
      */
+    #[Groups(["order:write", "order:read"])]
     #[ORM\OneToMany(targetEntity: OrderProduct::class, mappedBy: 'idOrder')]
     private Collection $orderProducts;
 
@@ -80,18 +87,6 @@ class Order
     public function setIdUser(?User $idUser): static
     {
         $this->idUser = $idUser;
-
-        return $this;
-    }
-
-    public function getIdProduct(): ?Product
-    {
-        return $this->idProduct;
-    }
-
-    public function setIdProduct(?Product $idProduct): static
-    {
-        $this->idProduct = $idProduct;
 
         return $this;
     }
@@ -136,14 +131,6 @@ class Order
     {
         return $this->priceTotal;
     }
-
-    public function setPriceTotal(float $priceTotal): static
-    {
-        $this->priceTotal = $priceTotal;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, OrderProduct>
      */
@@ -157,8 +144,9 @@ class Order
         if (!$this->orderProducts->contains($orderProduct)) {
             $this->orderProducts->add($orderProduct);
             $orderProduct->setIdOrder($this);
+            $this->updatePriceTotal();
         }
-
+    
         return $this;
     }
 
@@ -169,8 +157,26 @@ class Order
             if ($orderProduct->getIdOrder() === $this) {
                 $orderProduct->setIdOrder(null);
             }
+            $this->updatePriceTotal();
         }
-
+    
         return $this;
     }
+
+    public function calculateTotalPrice(): float
+    {
+        $totalPrice = 0.0;
+
+        foreach ($this->orderProducts as $orderProduct) {
+            $totalPrice += $orderProduct->getQuantity() * $orderProduct->getPrice();
+        }
+
+        return $totalPrice;
+    }
+
+    private function updatePriceTotal(): void
+    {
+        $this->priceTotal = $this->calculateTotalPrice();
+    }
+
 }

@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\OrderProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderProductRepository::class)]
 #[ApiResource(
@@ -29,14 +30,16 @@ class OrderProduct
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-    #[ORM\ManyToOne(inversedBy: 'orderProducts')]
+    
+    #[ORM\ManyToOne(inversedBy: 'orderProducts', cascade: ["persist"])]
     private ?Order $idOrder = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderProducts')]
     private ?Product $idProduct = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\GreaterThanOrEqual(1)]
     private ?int $quantity = null;
 
     #[ORM\Column]
@@ -45,6 +48,11 @@ class OrderProduct
     #[ORM\ManyToOne(inversedBy: 'orderProducts')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $idUser = null;
+
+    public function __construct()
+    {
+        $this->updatePriceFromProduct();
+    }
 
     public function getId(): ?int
     {
@@ -71,7 +79,7 @@ class OrderProduct
     public function setIdProduct(?Product $idProduct): static
     {
         $this->idProduct = $idProduct;
-
+        $this->updatePriceFromProduct();
         return $this;
     }
 
@@ -92,13 +100,12 @@ class OrderProduct
         return $this->price;
     }
 
-    public function setPrice(float $price): static
+    private function updatePriceFromProduct(): void
     {
-        $this->price = $price;
-
-        return $this;
+        if ($this->idProduct) {
+            $this->price = $this->idProduct->getPrice();
+        }
     }
-
     public function getIdUser(): ?User
     {
         return $this->idUser;
