@@ -47,7 +47,7 @@ class Adress
     private ?string $country = null;
 
     #[ORM\Column]
-    private ?int $zipCode = null;
+    private ?string $zipCode = null;
 
     #[ORM\Column(length: 255)]
     private ?string $adress = null;
@@ -116,12 +116,12 @@ class Adress
         return $this;
     }
 
-    public function getZipCode(): ?int
+    public function getZipCode(): ?string
     {
         return $this->zipCode;
     }
 
-    public function setZipCode(int $zipCode): static
+    public function setZipCode(string $zipCode): static
     {
         $this->zipCode = $zipCode;
 
