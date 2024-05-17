@@ -34,27 +34,28 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class Order
 {
+    #[Groups(["order:read"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["order:write", "order:read"])]
+    #[Groups(["order:write","order:read"])]
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $idUser = null;
 
-    #[Groups(["order:write", "order:read"])]
+    #[Groups(["order:write","order:read"])]
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Adress $idAdress = null;
 
-    #[Groups(["order:write", ])]
+    #[Groups(["order:write","order:read"])]
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['en cours de paiement', 'commandé', 'en cours de livraison', 'livré', 'annulé'])]
     private ?string $state = null;
-    #[Groups(["order:write", "order:read"])]
+    #[Groups(["order:write","order:read"])]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
