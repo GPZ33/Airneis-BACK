@@ -8,6 +8,8 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Adress;
 use App\Entity\Order;
+use App\Entity\OrderProduct;
+use App\Entity\User;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -32,12 +34,18 @@ final class CurrentUserExtension implements QueryCollectionExtensionInterface, Q
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if (($resourceClass !== Adress::class && $resourceClass !== Order::class) || $this->security->isGranted('ROLE_ADMIN') || null === $user = $this->security->getUser()) {
+        if (!in_array($resourceClass, [Adress::class, Order::class, OrderProduct::class, User::class], true) || $this->security->isGranted('ROLE_ADMIN') || null === $user = $this->security->getUser()) {
             return;
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder->andWhere(sprintf('%s.idUser = :current_user', $rootAlias));
+
+        if ($resourceClass === User::class) {
+            $queryBuilder->andWhere(sprintf('%s.id = :current_user', $rootAlias));
+        } else {
+            $queryBuilder->andWhere(sprintf('%s.idUser = :current_user', $rootAlias));
+        }
+
         $queryBuilder->setParameter('current_user', $user->getId());
     }
 }

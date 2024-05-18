@@ -16,36 +16,38 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['order:read']],
+    normalizationContext: ['enable_max_depth' => true,'groups' => ['order:read']],
     denormalizationContext: ['groups' => ['order:write']],
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"), 
-        new Get(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
-        new Put(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Get(security: "is_granted('ROLE_USER')"),
+        new Put(security: "is_granted('ROLE_USER')r"),
         new Post(security: "is_granted('ROLE_USER')"),
-        new Patch(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
-        new Delete(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Patch(security: "is_granted('ROLE_USER')"),
+        new Delete(security: "is_granted('ROLE_USER')"),
     ]
 )]
 class Order
 {
-    #[Groups(["order:read"])]
+    #[Groups(["order:read","order_product:read"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["order:write","order:read"])]
+    #[Groups(["order:write","order:read","user:read"])]
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $idUser = null;
 
-    #[Groups(["order:write","order:read"])]
+    #[Groups(["order:write","order:read","adress:read"])]
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Adress $idAdress = null;
@@ -55,8 +57,12 @@ class Order
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['en cours de paiement', 'commandé', 'en cours de livraison', 'livré', 'annulé'])]
     private ?string $state = null;
-    #[Groups(["order:write","order:read"])]
+   
+    #[Groups(["order:write", "order:read"])]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[\Symfony\Component\Serializer\Annotation\Context([
+        DateTimeNormalizer::FORMAT_KEY => 'Y-m-d',
+    ])]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column]
@@ -66,7 +72,8 @@ class Order
     /**
      * @var Collection<int, OrderProduct>
      */
-    #[Groups(["order:write", "order:read"])]
+    #[Groups(["order:write", "order:read","order_product:read"])]
+    #[MaxDepth(1)]
     #[ORM\OneToMany(targetEntity: OrderProduct::class, mappedBy: 'idOrder')]
     private Collection $orderProducts;
 
@@ -124,7 +131,6 @@ class Order
     public function setDate(\DateTimeInterface $date): static
     {
         $this->date = $date;
-
         return $this;
     }
 

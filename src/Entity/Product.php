@@ -17,9 +17,13 @@ use ApiPlatform\Metadata\Put;
 use App\Entity\Category;
 use App\Entity\Material;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ApiResource(
+    normalizationContext: ['enable_max_depth' => true,'groups' => ['product:read']],
+    denormalizationContext: ['groups' => ['product:write']],
     operations: [
         new GetCollection(),
         new Get(),
@@ -28,51 +32,61 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(security: "is_granted('ROLE_ADMIN')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
-   // normalizationContext: ['groups' => ['read:collection']]
 )]
 
 class Product 
 {
+    #[Groups(["product:read","order_product:read","material:read","category:read","media_object:read"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    //#[Groups(['read:collection'])]
     private ?int $id = null;
 
+    #[Groups(["product:write","product:read"])]
     #[ORM\Column(length: 255)]
-   // #[Groups(['read:collection'])]
     private ?string $name = null;
 
-   
+    #[Groups(["product:write","product:read"])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
+    #[Groups(["product:write","product:read"])]
     #[ORM\Column]
-    //#[Groups(['read:collection'])]
     private ?float $price = null;
 
+    #[Groups(["product:write","product:read"])]
+    #[MaxDepth(1)]
     #[ORM\Column]
-    //#[Groups(['read:collection'])]
     private ?bool $stock = null;
-    //#[Groups(['read:out'])]
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
     private Collection $category;
-    //#[Groups(['read:out'])]
+
+    #[Groups(["product:write","product:read"])]
+    #[MaxDepth(1)]
     #[ORM\ManyToMany(targetEntity: Material::class, mappedBy: 'products')]
     private Collection $materials;
 
+    #[Groups(["product:read"])]
+    #[MaxDepth(1)]
     #[ORM\OneToMany(targetEntity: OrderProduct::class, mappedBy: 'idProduct')]
     private Collection $orderProducts;
 
+    #[Groups(["product:write","product:read"])]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[\Symfony\Component\Serializer\Annotation\Context([
+        DateTimeNormalizer::FORMAT_KEY => 'Y-m-d',
+    ])]
     private ?\DateTimeInterface $addedDate = null;
 
+    #[Groups(["product:write","product:read"])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $details = null;
 
     /**
      * @var Collection<int, Images>
      */
+    #[Groups(["product:read"])]
+    #[MaxDepth(1)]
     #[ORM\OneToMany(targetEntity: Images::class, mappedBy: 'product')]
     private Collection $images;
 

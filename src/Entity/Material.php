@@ -13,9 +13,13 @@ use App\Repository\MaterialRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: MaterialRepository::class)]
 #[ApiResource(
+    normalizationContext: ['enable_max_depth' => true,'groups' => ['material:read']],
+    denormalizationContext: ['groups' => ['material:write']],
     operations: [
         new GetCollection(),
         new Get(),
@@ -27,14 +31,18 @@ use Doctrine\ORM\Mapping as ORM;
 
 class Material
 {
+    #[Groups(["material:read","product:read"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(["material:write","material:read"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[Groups(["material:read"])]
+    #[MaxDepth(1)]
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'materials')]
     private Collection $products;
 

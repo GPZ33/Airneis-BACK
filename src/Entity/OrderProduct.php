@@ -12,39 +12,50 @@ use ApiPlatform\Metadata\Put;
 use App\Repository\OrderProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: OrderProductRepository::class)]
 #[ApiResource(
+    normalizationContext: ['enable_max_depth' => true,'groups' => ['order_product:read']],
+    denormalizationContext: ['groups' => ['order_product:write']],
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"), 
-        new Get(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
-        new Put(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Get(security: "is_granted('ROLE_USER')"),
+        new Put(security: "is_granted('ROLE_USER')"),
         new Post(security: "is_granted('ROLE_USER')"),
-        new Patch(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
-        new Delete(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new Patch(security: "is_granted('ROLE_USER')"),
+        new Delete(security: "is_granted('ROLE_USER')"),
     ],
 )]
 class OrderProduct
 {
+    #[Groups(["order_product:read", "order:read"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
     
+    #[Groups(["order_product:read", "order:read"])]
+    #[SerializedName("idOrder")]
     #[ORM\ManyToOne(inversedBy: 'orderProducts', cascade: ["persist"])]
     private ?Order $idOrder = null;
 
+    #[Groups(["order_product:read","order_product:write"])]
     #[ORM\ManyToOne(inversedBy: 'orderProducts')]
     private ?Product $idProduct = null;
 
+    #[Groups(["order_product:read","order_product:write"])]
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\GreaterThanOrEqual(1)]
     private ?int $quantity = null;
 
+    #[Groups(["order_product:read"])]
     #[ORM\Column]
     private ?float $price = null;
 
+    #[Groups(["order_product:read","order_product:write","user:read"])]
     #[ORM\ManyToOne(inversedBy: 'orderProducts')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $idUser = null;
