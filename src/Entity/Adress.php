@@ -14,47 +14,60 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\ExpressionLanguage\Expression;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: AdressRepository::class)]
 #[ApiResource(
+    normalizationContext: ['enable_max_depth' => true, 'groups' => ['adress:read']],
+    denormalizationContext: ['groups' => ['adress:write']],
     operations: [
-        new GetCollection(security: "is_granted('ROLE_USER')"), // Peut on ajouter or object.owner si l'user a plusieurs commandes ? Si oui, l'appel GetCollection appellera t il tous les objets ou juste les siens ?
-        new Get(security: "is_granted('ROLE_ADMIN') or object.idUser == user"), // ça marche
-        new Put(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
-        new Post(security: "is_granted('ROLE_USER')"), // sécurité suffisante ? Un autre User peut-il créer une adresse pour un autre User ? Du mal à visualiser
-        new Patch(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
-        new Delete(security: "is_granted('ROLE_ADMIN') or object.idUser == user"),
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Put(security: "is_granted('ROLE_USER')"),
+        new Post(security: "is_granted('ROLE_USER')"),
+        new Patch(security: "is_granted('ROLE_USER')"),
+        new Delete(security: "is_granted('ROLE_USER')"),
     ]
 )]
 
 class Adress
 {
+    #[Groups(['adress:read', 'order:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['adress:read', 'adress:write', 'user:read'])]
     #[ORM\ManyToOne(inversedBy: 'adresses')]
     public ?User $idUser = null;
 
+    #[Groups(['adress:read', 'adress:write'])]
     #[ORM\Column(length: 255)]
     private ?string $city = null;
 
+    #[Groups(['adress:read', 'adress:write'])]
     #[ORM\Column(length: 255)]
     private ?string $region = null;
 
+    #[Groups(['adress:read', 'adress:write'])]
     #[ORM\Column(length: 255)]
     private ?string $country = null;
 
+    #[Groups(['adress:read', 'adress:write'])]
     #[ORM\Column]
     private ?string $zipCode = null;
 
+    #[Groups(['adress:read', 'adress:write'])]
     #[ORM\Column(length: 255)]
     private ?string $adress = null;
 
+    #[Groups(['adress:read', 'adress:write'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[Groups(['adress:read'])]
+    #[MaxDepth(1)]
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'idAdress')]
     private Collection $orders;
 

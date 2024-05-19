@@ -56,13 +56,16 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 )]
 class Images
 {
+    #[Groups(['media_object:read', 'product:read', 'category:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
     #[Groups(['media_object:read'])]
     #[ORM\ManyToOne(inversedBy: 'images')]
     private ?Product $product = null;
+
     #[Groups(['media_object:read'])]
     #[ORM\OneToOne(inversedBy: 'image', cascade: ['persist', 'remove'])]
     private ?Category $category = null;

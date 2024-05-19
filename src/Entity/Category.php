@@ -13,9 +13,13 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource(
+    normalizationContext: ['enable_max_depth' => true,'groups' => ['category:read']],
+    denormalizationContext: ['groups' => ['category:write']],
     operations: [
         new GetCollection(),
         new Get(),
@@ -27,20 +31,26 @@ use Doctrine\ORM\Mapping as ORM;
 
 class Category
 {
+    #[Groups(["category:read","product:read","media_object:read"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(["category:write","category:read"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[Groups(["category:write","category:read"])]
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
+    #[Groups(["category:read"])]
+    #[MaxDepth(1)]
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'category')]
     private Collection $products;
 
+    #[Groups(["category:read"])]
     #[ORM\OneToOne(mappedBy: 'category', cascade: ['persist', 'remove'])]
     private ?Images $image = null;
 

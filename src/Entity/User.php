@@ -19,6 +19,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -26,17 +27,17 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(security: "is_granted('ROLE_ADMIN')"),
         new Post(processor: UserPasswordHasher::class),
-        new Get(security: "is_granted('ROLE_ADMIN')"),
-        new Put(processor: UserPasswordHasher::class, security: "is_granted('ROLE_ADMIN') or object.owner == user"),
-        new Patch(processor: UserPasswordHasher::class, security: "is_granted('ROLE_ADMIN') or object.owner == user"),
-        new Delete(security: "is_granted('ROLE_ADMIN') or object.owner == user"),
+        new Get(security: "is_granted('ROLE_USER')"),
+        new Put(processor: UserPasswordHasher::class, security: "is_granted('ROLE_USER')"),
+        new Patch(processor: UserPasswordHasher::class, security: "is_granted('ROLE_USER')"),
+        new Delete(security: "is_granted('ROLE_USER')"),
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update']],
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'order:read','order_product:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -79,6 +80,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Groups(['user:read', 'user:create', 'user:update'])]
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[\Symfony\Component\Serializer\Annotation\Context([
+        DateTimeNormalizer::FORMAT_KEY => 'Y-m-d',
+    ])]
     private ?\DateTimeInterface $birthday = null;
 
     #[ORM\OneToMany(targetEntity: Adress::class, mappedBy: 'idUser')]
