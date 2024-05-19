@@ -28,6 +28,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
         new Get(),
         new GetCollection(),
         new Post(
+            security: "is_granted('ROLE_ADMIN')",
             inputFormats: ['multipart' => ['multipart/form-data']],
             processor: SaveMediaObject::class,
             deserialize: false, 
@@ -50,8 +51,8 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
                 )
             )
         ),
-        new Patch(),
-        New Delete()
+        new Patch(security: "is_granted('ROLE_ADMIN')"),
+        New Delete(security: "is_granted('ROLE_ADMIN')")
     ]
 )]
 class Images
@@ -80,6 +81,9 @@ class Images
 
     #[ORM\Column(nullable: true)] 
     public ?string $filePath = null;
+
+    #[ORM\Column]
+    private ?bool $isCarrousel = false;
 
     public function getId(): ?int
     {
@@ -130,5 +134,17 @@ class Images
     public function setFile(?File $file): void
     {
         $this->file = $file;
+    }
+    #[Groups(['media_object:read'])]
+    public function isCarrousel(): ?bool
+    {
+        return $this->isCarrousel;
+    }
+
+    public function setCarrousel(?bool $isCarrousel): static
+    {
+        $this->isCarrousel = $isCarrousel;
+
+        return $this;
     }
 }
