@@ -55,10 +55,11 @@ class Product
     private ?float $price = null;
 
     #[Groups(["product:write","product:read"])]
-    #[MaxDepth(1)]
     #[ORM\Column]
     private ?bool $stock = null;
+
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
+    #[MaxDepth(1)]
     private Collection $category;
 
     #[Groups(["product:write","product:read"])]
@@ -89,6 +90,9 @@ class Product
     #[MaxDepth(1)]
     #[ORM\OneToMany(targetEntity: Images::class, mappedBy: 'product')]
     private Collection $images;
+
+    #[ORM\Column]
+    private ?bool $isHighlander = false;
 
     public function __construct()
     {
@@ -206,7 +210,7 @@ class Product
     {
         return $this->addedDate;
     }
-    // Création automatique 
+
     #[ORM\PrePersist]
     public function setAddedDate(\DateTimeInterface $addedDate): static
     {
@@ -274,11 +278,23 @@ class Product
     public function removeImage(Images $image): static
     {
         if ($this->images->removeElement($image)) {
-            // set the owning side to null (unless already changed)
             if ($image->getProduct() === $this) {
                 $image->setProduct(null);
             }
         }
+
+        return $this;
+    }
+
+    #[Groups(["product:read"])]
+    public function isHighlander(): ?bool
+    {
+        return $this->isHighlander;
+    }
+
+    public function setHighlander(?bool $isHighlander): static
+    {
+        $this->isHighlander = $isHighlander;
 
         return $this;
     }
