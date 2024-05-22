@@ -1,6 +1,6 @@
 <?php
 
-namespace App\EventListener;
+namespace App\Event;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Symfony\Component\HttpFoundation\RequestStack;

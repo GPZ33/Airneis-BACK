@@ -72,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $last_name = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $emailValidated = null;
+    private ?bool $emailValidated = false;
 
     #[Groups(['user:read', 'user:create', 'user:update'])]
     #[ORM\Column(nullable: true)]
@@ -97,11 +97,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: OrderProduct::class, mappedBy: 'idUser')]
     private Collection $orderProducts;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $verificationToken = null;
+
     public function __construct()
     {
         $this->adresses = new ArrayCollection();
         $this->orders = new ArrayCollection();
         $this->orderProducts = new ArrayCollection();
+        $this->verificationToken = bin2hex(random_bytes(32));
     }
 
     public function getId(): ?int
@@ -340,4 +344,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
+
+    public function setVerificationToken(?string $verificationToken): self
+    {
+        $this->verificationToken = $verificationToken;
+
+        return $this;
+    }
 }

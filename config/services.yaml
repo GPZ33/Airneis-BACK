@@ -9,6 +9,10 @@ services:
         resource: '../src/DataFixtures/'
         tags: ['doctrine.fixture.orm']
 
+    App\Event\UserVerificationSubscriber:
+        tags:
+            - { name: 'kernel.event_subscriber' }
+
     App\:
         resource: '../src/'
         exclude:
@@ -18,7 +22,7 @@ services:
             - '../src/DataFixtures'
 
     app.event_listener.custom_jwt_created_listener:
-        class: App\EventListener\CustomJWTCreatedListener
+        class: App\Event\CustomJWTCreatedListener
         arguments: [ '@request_stack' ]
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
