@@ -58,6 +58,7 @@ class Product
     #[ORM\Column]
     private ?bool $stock = null;
 
+    #[Groups(["product:write","product:read"])]
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
     #[MaxDepth(1)]
     private Collection $category;
