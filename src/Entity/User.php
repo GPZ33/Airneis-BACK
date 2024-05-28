@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 #[ORM\Table(name: '`user`')]
 #[ApiResource(
     operations: [
-        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_USER')"),
         new Post(processor: UserPasswordHasher::class),
         new Get(security: "is_granted('ROLE_USER')"),
         new Put(processor: UserPasswordHasher::class, security: "is_granted('ROLE_USER')"),
@@ -37,7 +37,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[Groups(['user:read', 'order:read','order_product:read'])]
+    #[Groups(['user:read', 'order:read','order_product:read','adress:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
