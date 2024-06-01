@@ -41,17 +41,17 @@ class OrderProduct
     #[ORM\ManyToOne(inversedBy: 'orderProducts', cascade: ["persist"])]
     private ?Order $idOrder = null;
 
-    #[Groups(["order_product:read","order_product:write"])]
+    #[Groups(["order_product:read","order_product:write", "order:read"])]
     #[ORM\ManyToOne(inversedBy: 'orderProducts')]
     private ?Product $idProduct = null;
 
-    #[Groups(["order_product:read","order_product:write"])]
+    #[Groups(["order_product:read","order_product:write", "order:read"])]
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\GreaterThanOrEqual(1)]
     private ?int $quantity = null;
 
-    #[Groups(["order_product:read"])]
+    #[Groups(["order_product:read", "order:read"])]
     #[ORM\Column]
     private ?float $price = null;
 

@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 class Product 
 {
-    #[Groups(["product:read","order_product:read","material:read","category:read","media_object:read"])]
+    #[Groups(["product:read","order_product:read","order:read","material:read","category:read","media_object:read"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -87,7 +87,7 @@ class Product
     /**
      * @var Collection<int, Images>
      */
-    #[Groups(["product:read"])]
+    #[Groups(["product:read", "order_product:read", "order:read"])]
     #[MaxDepth(1)]
     #[ORM\OneToMany(targetEntity: Images::class, mappedBy: 'product')]
     private Collection $images;
