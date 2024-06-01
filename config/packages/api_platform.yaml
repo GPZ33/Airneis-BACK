@@ -1,5 +1,5 @@
 api_platform:
-    title: Hello API Platform
+    title: Airneis API Platform
     version: 1.0.0
     formats:
         jsonld: ['application/ld+json']
@@ -14,6 +14,9 @@ api_platform:
         extra_properties:
             standard_put: true
             rfc_7807_compliant_errors: true
+    collection:
+        pagination:
+            page_parameter_name: _page
     event_listeners_backward_compatibility_layer: true
     keep_legacy_inflector: false
     swagger:

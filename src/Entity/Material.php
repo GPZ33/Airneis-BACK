@@ -37,7 +37,7 @@ class Material
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["material:write","material:read"])]
+    #[Groups(["material:write","material:read", "product:read"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
