@@ -42,7 +42,7 @@ class Product
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["product:write","product:read"])]
+    #[Groups(["product:write","product:read", "order:read"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
@@ -80,7 +80,7 @@ class Product
     ])]
     private ?\DateTimeInterface $addedDate = null;
 
-    #[Groups(["product:write","product:read"])]
+    #[Groups(["product:write","product:read", "order:read"])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $details = null;
 
