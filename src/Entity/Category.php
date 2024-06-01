@@ -37,7 +37,7 @@ class Category
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["category:write","category:read"])]
+    #[Groups(["category:write","category:read", "product:read"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 

@@ -72,7 +72,7 @@ class Images
     private ?Category $category = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'])]
-    #[Groups(['media_object:read'])]
+    #[Groups(['media_object:read', 'product:read'])]
     public ?string $contentUrl = null;
 
     #[Vich\UploadableField(mapping: 'images', fileNameProperty: 'filePath')]
