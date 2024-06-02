@@ -87,7 +87,7 @@ class Product
     /**
      * @var Collection<int, Images>
      */
-    #[Groups(["product:read", "order_product:read", "order:read"])]
+    #[Groups(["product:read", "product:write", "order_product:read", "order:read"])]
     #[MaxDepth(1)]
     #[ORM\OneToMany(targetEntity: Images::class, mappedBy: 'product')]
     private Collection $images;
@@ -292,7 +292,7 @@ class Product
     {
         return $this->isHighlander;
     }
-
+    #[Groups(["product:write"])]
     public function setHighlander(?bool $isHighlander): static
     {
         $this->isHighlander = $isHighlander;
