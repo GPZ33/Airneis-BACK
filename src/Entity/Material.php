@@ -41,7 +41,7 @@ class Material
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[Groups(["material:read"])]
+    #[Groups(["material:read", "material:write"])]
     #[MaxDepth(1)]
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'materials')]
     private Collection $products;

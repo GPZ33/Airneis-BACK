@@ -42,7 +42,7 @@ class Product
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["product:write","product:read", "order:read", "category:read"])]
+    #[Groups(["product:write","product:read", "order:read", "category:read", "material:read"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
