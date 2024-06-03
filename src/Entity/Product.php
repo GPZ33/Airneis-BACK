@@ -21,6 +21,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['enable_max_depth' => true,'groups' => ['product:read']],
     denormalizationContext: ['groups' => ['product:write']],
@@ -33,7 +34,6 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
         new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
 )]
-
 class Product 
 {
     #[Groups(["product:read","order_product:read","order:read","material:read","category:read","media_object:read"])]
@@ -42,7 +42,7 @@ class Product
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["product:write","product:read", "order:read"])]
+    #[Groups(["product:write","product:read", "order:read", "category:read"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
@@ -213,11 +213,12 @@ class Product
     }
 
     #[ORM\PrePersist]
-    public function setAddedDate(\DateTimeInterface $addedDate): static
+    public function setAddedDate(): static
     {
         $this->addedDate = new \DateTime();
         return $this;
     }
+
     public function getOrderProducts(): Collection
     {
         return $this->orderProducts;
@@ -232,7 +233,6 @@ class Product
 
         return $this;
     }
-
 
     public function removeOrderProduct(OrderProduct $orderProduct): static
     {
@@ -292,6 +292,7 @@ class Product
     {
         return $this->isHighlander;
     }
+    
     #[Groups(["product:write"])]
     public function setHighlander(?bool $isHighlander): static
     {
