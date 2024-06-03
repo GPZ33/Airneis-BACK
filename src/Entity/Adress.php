@@ -23,6 +23,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
     denormalizationContext: ['groups' => ['adress:write']],
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_USER')"),
         new Put(security: "is_granted('ROLE_USER')"),
         new Post(security: "is_granted('ROLE_USER')"),
         new Patch(security: "is_granted('ROLE_USER')"),
