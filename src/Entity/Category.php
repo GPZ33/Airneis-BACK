@@ -45,7 +45,7 @@ class Category
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
-    #[Groups(["category:read"])]
+    #[Groups(["category:read", "category:write"])]
     #[MaxDepth(1)]
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'category')]
     private Collection $products;
